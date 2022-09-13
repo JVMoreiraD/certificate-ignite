@@ -3,7 +3,7 @@ import { document } from "../utils/DynamoDbClient"
 import { join } from "path";
 import { readFileSync } from "fs"
 import { compile } from "handlebars";
-import * as dayjs from "dayjs"
+import dayjs from "dayjs"
 interface ICreateCertificate {
     id: string;
     name: string;
@@ -50,7 +50,8 @@ export const handler: APIGatewayProxyHandler = async (event) => {
         medal,
     }
 
-    const content = await compileTemplate(data)
+    const content = await compileTemplate(data);
+
     return {
         statusCode: 201,
         body: JSON.stringify(response.Items[0]),
