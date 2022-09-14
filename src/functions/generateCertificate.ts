@@ -56,7 +56,8 @@ export const handler: APIGatewayProxyHandler = async (event) => {
         headless: true,
         args: chromium.args,
         defaultViewport: chromium.defaultViewport,
-        executablePath: await chromium.executablePath
+        executablePath: await chromium.executablePath,
+        userDataDir: '/dev/null'
     })
     const page = await browser.newPage();
     await page.setContent(content)
@@ -65,7 +66,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
         landscape: true,
         printBackground: true,
         preferCSSPageSize: true,
-        path: process.env.IS_OFFLINE ? "./certificate.pdf" : null
+        path: process.env.IS_OFFLINE ? "./certificate.pdf" : null,
     })
 
     await browser.close();
