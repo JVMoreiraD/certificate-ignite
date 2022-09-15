@@ -32,7 +32,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
         ExpressionAttributeValues: { ":id": id }
     }).promise()
     const userAlreadyExists = response.Items[0];
-    console.log(!userAlreadyExists)
+
     if (!userAlreadyExists) {
         await document.put({
             TableName: "users_certificates",
