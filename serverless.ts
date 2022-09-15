@@ -19,11 +19,18 @@ const serverlessConfiguration: AWS = {
     },
     iam: {
       role: {
-        statements: [{
-          Effect: "Allow",
-          Action: ["dynamodb:*"],
-          Resource: ["*"]
-        }]
+        statements: [
+          {
+            Effect: "Allow",
+            Action: ["dynamodb:*"],
+            Resource: ["*"]
+          },
+          {
+            Effect: "Allow",
+            Action: ["s3:*"],
+            Resource: ["*"]
+          }
+        ]
       }
     }
   },

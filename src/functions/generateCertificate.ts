@@ -1,6 +1,7 @@
-import dayjs from "dayjs"
 import { APIGatewayProxyHandler } from "aws-lambda"
 import chromium from "chrome-aws-lambda"
+import dayjs from "dayjs"
+import { S3 } from "aws-sdk"
 import { document } from "../utils/DynamoDbClient"
 import { join } from "path";
 import { readFileSync } from "fs"
@@ -25,21 +26,25 @@ const compileTemplate = async (data: ITemplate) => {
 }
 export const handler: APIGatewayProxyHandler = async (event) => {
     const { id, name, grade } = JSON.parse(event.body) as ICreateCertificate;
-    await document.put({
-        TableName: "users_certificates",
-        Item: {
-            id,
-            name,
-            grade,
-            created_at: new Date().getTime()
-        }
-    }).promise();
-
     const response = await document.query({
         TableName: "users_certificates",
         KeyConditionExpression: "id = :id",
         ExpressionAttributeValues: { ":id": id }
     }).promise()
+    const userAlreadyExists = response.Items[0];
+    console.log(!userAlreadyExists)
+    if (!userAlreadyExists) {
+        await document.put({
+            TableName: "users_certificates",
+            Item: {
+                id,
+                name,
+                grade,
+                created_at: new Date().getTime()
+            }
+        }).promise();
+    }
+
 
     const medalPath = join(process.cwd(), "src", "templates", "selo.png");
     const medal = readFileSync(medalPath, "base64")
@@ -71,9 +76,22 @@ export const handler: APIGatewayProxyHandler = async (event) => {
 
     await browser.close();
 
+    const s3 = new S3();
+
+    await s3.putObject({
+        Bucket: "certificate-serverless-node-bucket",
+        Key: `${id}.pdf`,
+        ACL: "public-read",
+        Body: pdf,
+        ContentType: "application/pdf"
+    }).promise()
+
     return {
         statusCode: 201,
-        body: JSON.stringify(response.Items[0]),
+        body: JSON.stringify({
+            message: "Certificado criado com sucesso",
+            url: `https://certificate-serverless-node-bucket.s3.amazonaws.com/${id}.pdf`,
+        }),
 
     }
 }
